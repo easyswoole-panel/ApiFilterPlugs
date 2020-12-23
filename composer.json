@@ -1,0 +1,22 @@
+{
+  "name": "iplimiterplugs/ip-limiter",
+  "type": "library",
+  "description": "EasySwoole Panel's IP Current Limiter plugs",
+  "keywords": [
+    "easyswoole panel",
+    "easyswoole plugs"
+  ],
+  "homepage": "http://www.huanghui.xyz/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "XueSiLf",
+      "email": "1592328848@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "IpLimiterPlugs\\IpLimiter\\": "src/"
+    }
+  }
+}
