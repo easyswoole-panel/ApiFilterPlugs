@@ -7,57 +7,74 @@
  * Time: 0:29
  */
 
-namespace IpLimiterPlugs\IpLimiter;
+namespace Siam\ApiFilterPlugs\common;
 
 use EasySwoole\Component\Singleton;
 use EasySwoole\Component\TableManager;
 use Swoole\Table;
 
-class IpLists
+class AccessContain
 {
     use Singleton;
 
     /** @var Table */
     protected $table;
 
+    const API_FILTER_TOTAL = "API_FILTER_TOTAL";
+
     public function __construct()
     {
         TableManager::getInstance()->add('ipList', [
-            'ip' => [
+            'filter_key'     => [
                 'type' => Table::TYPE_STRING,
-                'size' => 16
+                'size' => 16,
             ],
-            'count' => [
+            'count'          => [
                 'type' => Table::TYPE_INT,
-                'size' => 8
+                'size' => 8,
             ],
+            'setting'        => [
+                'type' => Table::TYPE_INT,
+                'size' => 8,
+            ],// -1为不限制 0为黑名单 整数为限制数
             'lastAccessTime' => [
                 'type' => Table::TYPE_INT,
-                'size' => 8
-            ]
+                'size' => 8,
+            ],
         ], 1024 * 128);
         $this->table = TableManager::getInstance()->get('ipList');
     }
 
-    function access(string $ip): int
+    function getSetting(string $filter_key)
     {
-        $key = substr(md5($ip), 8, 16);
+        return $this->getAuto($filter_key)['setting'];
+    }
+
+    function access(string $filter_key): int
+    {
+        return $this->getAuto($filter_key)['count'];
+    }
+
+    function getAuto($filter_key)
+    {
+        $key  = substr(md5($filter_key), 8, 16);
         $info = $this->table->get($key);
 
         if ($info) {
             $this->table->set($key, [
                 'lastAccessTime' => time(),
-                'count' => $info['count'] + 1,
+                'count'          => $info['count'] + 1,
+                'setting'        => $info['setting'],
             ]);
-            return $info['count'] + 1;
         } else {
             $this->table->set($key, [
-                'ip' => $ip,
+                'filter_key'     => $filter_key,
                 'lastAccessTime' => time(),
-                'count' => $info['count'] + 1,
+                'count'          => 1,
+                'setting'        => -1,
             ]);
-            return 1;
         }
+        return !!$info ? $info : $this->table->get($key);
     }
 
     function clear()

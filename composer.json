@@ -1,22 +1,22 @@
 {
-  "name": "iplimiterplugs/ip-limiter",
+  "name": "siam/api-filter-plugs",
   "type": "library",
-  "description": "EasySwoole Panel's IP Current Limiter plugs",
+  "description": "EasySwoole Panel'sfor api filter",
   "keywords": [
     "easyswoole panel",
     "easyswoole plugs"
   ],
-  "homepage": "http://www.huanghui.xyz/",
+  "homepage": "http://www.siammm.cn",
   "license": "Apache-2.0",
   "authors": [
     {
-      "name": "XueSiLf",
-      "email": "1592328848@qq.com"
+      "name": "Siam",
+      "email": "59419979@qq.com"
     }
   ],
   "autoload": {
     "psr-4": {
-      "IpLimiterPlugs\\IpLimiter\\": "src/"
+      "Siam\\ApiFilterPlugs\\": "src/"
     }
   }
 }

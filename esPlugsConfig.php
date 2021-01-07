@@ -1,16 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: longhui
- * Email: <1592328848@qq.com>
- * Date: 2020/12/23
- * Time: 22:40
- */
 return [
-    'name'      => "IP 限流器",
-    'des'       => "IP 限流器插件",
-    'namespace' => "IpLimiterPlugs\\IpLimiter\\",
+    'name'      => "API 限流器",
+    'des'       => "API 限流器插件",
+    'namespace' => "Siam\\ApiFilter\\",
     'version'   => '1.0',
-    'logo'      => "http://www.huanghui.xyz/img/avatar.png",
+    'logo'      => "https://s3.ax1x.com/2020/12/08/DzOz8S.jpg",
     "home_view" => "",
 ];
