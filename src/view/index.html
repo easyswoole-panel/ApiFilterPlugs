@@ -1,3 +1,130 @@
-<div class="layui-fluid" id="VIEW-apply" lay-title="标题">
-    内容
+<div class="layui-fluid" id="VIEW-apply" lay-title="API限流器">
+    <div class="layui-row layui-col-space10">
+        <div class="layui-col-md6">
+
+            <div class="layui-card">
+                <div class="layui-card-body nepadmin-pad-l10 nepadmin-pad-r10">
+                    <div>TIP: -1表示不限制 0表示禁止访问 整数代表限制数量</div>
+                    <div>API_FILTER_TOTAL - 整个服务全局的限流</div>
+                    <div id="table"  lay-filter="table"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <form class="layui-card layui-form" layui-filter="add-auth">
+                <div class="layui-card-header">添加限流</div>
+                <div class="layui-card-body layui-row layui-col-space10">
+                    <div>TIP: key可为 ip、token等值 (配合自定义拦截逻辑) </div>
+                    <div class="layui-col-md6">
+                        <input type="text" name="key" placeholder="key"  lay-verify="required" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                    <div class="layui-col-md6">
+                        <input type="text" name="number" placeholder="数量" autocomplete="off"
+                               class="layui-input">
+                    </div>
+
+                        <button class="layui-btn" lay-submit lay-filter="add">立即提交</button>
+
+                </div>
+            </form>
+            <br>
+            <div class="layui-card">
+                <div class="layui-card-header">自定义拦截</div>
+                <div class="layui-card-body layui-row layui-col-space10">
+                    原理
+                    <pre>
+$token = PlugsHook::getInstance()->hook(Event::API_FILTER_DIY_HANDLE, $request, $response);
+if (isset($token[0])){
+    $set = AccessContain::getInstance()->getSetting($token[0]);
+    if (AccessContain::getInstance()->access($token[0]) > $set) {
+        PlugsHook::getInstance()->hook(Event::API_FILTER_DIY_EVENT, $request, $response);
+        return false;
+    }
+}
+                    </pre>
+                    要注入Event::API_FILTER_DIY_HANDLE事件，return token值
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<template id="bar">
+    <div class="layui-btn layui-btn-sm"  lay-event="edit">编辑</div>
+    <div class="layui-btn layui-btn-sm layui-btn-danger"  lay-event="delete">删除</div>
+</template>
+<script>
+    layui.use(['admin','form','jquery'], function(){
+        let table = layui.table;
+        let admin = layui.admin;
+        let form = layui.form;
+        let $ = layui.jquery;
+
+        //第一个实例
+        admin.renderTable({
+            elem: '#table',
+            id: 'user-table'
+            ,url: '/api/api-filter/get_list' //数据接口
+            ,page: true //开启分页
+            ,cols: [[ //表头
+                {field: 'set_id', title: 'ID', fixed: 'left'}
+                ,{field: 'key', title: 'key'}
+                ,{field: 'number', title: '数量'}
+                ,{fixed: 'right', width:150, toolbar: '#bar'} //这里的toolbar值是模板元素的选择器
+            ]]
+        });
+
+        //监听事件
+        table.on('tool(table)', function(obj){
+            let data = obj.data;
+            switch(obj.event){
+                case 'edit':
+                    layer.prompt({
+                        formType:0,
+                        title: '请输入新number',
+                    }, function(value, index, elem){
+                        admin.post({
+                            url:"/api-filter/edit",
+                            data:{
+                                set_id: data.set_id,
+                                number: value
+                            },
+                            success(res){
+                                layer.msg("编辑成功");
+                                $(".layui-laypage-btn").click();
+                                layer.close(index);
+                            }
+                        });
+                    });
+                    break;
+                case 'delete':
+                    admin.post({
+                        url:"/api-filter/delete",
+                        data:{
+                            set_id: data.set_id
+                        },
+                        success(res){
+                            layer.msg("删除成功");
+                            $(".layui-laypage-btn").click();
+                        }
+                    });
+                    break;
+            }
+        });
+
+        form.on('submit(add)', function(data){
+            admin.post({
+                url:"/api-filter/add",
+                data:data.field,
+                success(res){
+                    layer.msg("新增成功");
+                    $(".layui-laypage-btn").click();
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+    });
+</script>

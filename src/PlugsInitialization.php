@@ -7,6 +7,7 @@ use EasySwoole\Http\Request;
 use EasySwoole\Http\Response;
 use Siam\ApiFilterPlugs\common\AccessContain;
 use Siam\ApiFilterPlugs\common\Event;
+use Siam\ApiFilterPlugs\service\FilterSetting;
 use Siam\Plugs\common\utils\PlugsHook;
 
 class PlugsInitialization
@@ -28,7 +29,12 @@ class PlugsInitialization
                 $this->addTick(1 * 1000, function () {
                     AccessContain::getInstance()->clear();
                 });
-                // todo 定期从数据库同步配置到table中 1分钟1次
+                $this->addTick(3 * 1000, function () {
+                    $setting = FilterSetting::getAll();
+                    foreach ($setting as $set){
+                        AccessContain::getInstance()->updateSetting($set['key'], $set['number']);
+                    }
+                });
             }
         };
         $processConfig = new \EasySwoole\Component\Process\Config();
@@ -68,11 +74,11 @@ class PlugsInitialization
 
             // token限流/分组限流/自定义限流
             // 从hook返回token值和setting值  setting可选 不返回则从table获取
-            $token = "";
-            if ($token){
-                if (AccessContain::getInstance()->access($token) > 3) {
-                    ServerManager::getInstance()->getSwooleServer()->close($fd);
-                    echo "token限流\n";
+            $token = PlugsHook::getInstance()->hook(Event::API_FILTER_DIY_HANDLE, $request, $response);
+            if (isset($token[0])){
+                $set = AccessContain::getInstance()->getSetting($token[0]);
+                if (AccessContain::getInstance()->access($token[0]) > $set) {
+                    PlugsHook::getInstance()->hook(Event::API_FILTER_DIY_EVENT, $request, $response);
                     return false;
                 }
             }

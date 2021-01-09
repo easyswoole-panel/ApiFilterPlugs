@@ -77,10 +77,20 @@ class AccessContain
         return !!$info ? $info : $this->table->get($key);
     }
 
+    function updateSetting($filter_key, $setNumber)
+    {
+        $info = $this->getAuto($filter_key);
+        $info['setting'] = $setNumber;
+
+        $key  = substr(md5($filter_key), 8, 16);
+        $this->table->set($key, $info);
+    }
+
     function clear()
     {
         foreach ($this->table as $key => $item) {
-            $this->table->del($key);
+            $item['count'] = 0;
+            $this->table->set($key, $item);
         }
     }
 
